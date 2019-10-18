@@ -1,8 +1,8 @@
 class EnemyLauncher {
-    constructor(m, s, d) {
+    constructor(m, s, r) {
         this.missiles = m;
         this.speed = s;
-        this.difficulty = d;
+        this.fireRate = r;
     }
     fireMissiles() {
         if (this.missiles > 0) {
@@ -10,7 +10,9 @@ class EnemyLauncher {
                 enemyMissiles.push(new EnemyMissile(this.speed));
                 this.missiles--;
                 this.fireMissiles();
-            }, random(0, this.difficulty));
+            }, random(0, this.fireRate));
         }
+
+        // enemyMissiles.push(new EnemyMissile(this.speed));
     }
 }

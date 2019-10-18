@@ -1,24 +1,43 @@
+// to do list for part 4
+/* 
+- gameover screen
+- start screen
+- multiple levels
+- enhance graphic design
+
+*/
+
 function setup() { // once at the beginning.
     createCanvas(800, 800);
     missileList = [];
-    explosions = [];
+    explosions = [];``
     silos = [
-        new Silo(100, height - 100),
+        new Silo(50, height - 100),
         new Silo(width / 2, height - 100),
-        new Silo(width - 100, height - 100),
+        new Silo(width - 50, height - 100),
+    ];
+    cities = [ 
+        new City(100, height - 70),  
+        new City(200, height - 70),
+        new City(300, height - 70),
+        new City(450, height - 70),
+        new City(550, height - 70),
+        new City(650, height - 70),
+        
     ];
 
     enemyMissiles = [];
-
-    launcher = new EnemyLauncher(10, 3, 2000);
+    launcher = new EnemyLauncher(33, 2, 2000);
     launcher.fireMissiles();
-
 }
 
 function draw() { // main game loop ... infinite times...
-    background(0);
+    background(100);
 
-    // launcher.fireMissiles();
+    cities.forEach( c => {
+        // console.log(c);
+        c.draw();
+    });
 
     enemyMissiles = enemyMissiles.filter(e => {
         e.draw();
