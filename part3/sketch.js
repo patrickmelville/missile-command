@@ -10,7 +10,7 @@
 function setup() { // once at the beginning.
     createCanvas(800, 800);
     missileList = [];
-    explosions = [];``
+    explosions = [];
     silos = [
         new Silo(50, height - 100),
         new Silo(width / 2, height - 100),
