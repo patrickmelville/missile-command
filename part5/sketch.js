@@ -1,19 +1,21 @@
 // to do list for part 5
 
 /* 
-- rework missiles
-- multiple levels
-- enhance graphic design
+- FINISHED - rework missiles (simplify AKA get rid of enemylauncher)
+- FINISHED - multiple levels 
+- FINISHED - bonus screen
+- MEH FINISHED - enhance graphic design
 */
-
-const allMyTimeouts = new Set;
 
 function setup() { // once at the beginning.
     createCanvas(800, 800);
     textAlign(CENTER);
     textFont("VT323");
-    launcher = new EnemyLauncher(20, 2, 2000);
     gameState = 0; // 0 = unstarted, 1-? what level im on
+    remainingMissiles = 0;
+    remainingCities = 6;
+    score = 0;
+    bonusDelay = 30 * 3;
     missileList = [];
     explosions = [];
     silos = [];
@@ -22,24 +24,34 @@ function setup() { // once at the beginning.
 }
 
 function draw() { // main game loop ... infinite times...
-    background(100);
-    
+    background(10,0,40);
+    drawStats();
+
+    fill(255);
     if (gameState == -1) { // GAME OVER SCREEN
         textSize(188);
         text("GAME OVER", width / 2, height / 3);
         textSize(42);
         text("Press Spacebar to Start", width / 2, height / 2);
-        clearAllMyTimeouts();
     } else if (gameState == 0) { // MENU SCREEN
         textSize(124);
         text("MISSILE COMMAND", width / 2, height / 3);
         textSize(42);
         text("Press Spacebar to Start", width / 2, height / 2);
     } else if (gameState > 0) {
+        remainingCities = 6;
+        cities.forEach(c =>{
+            c.draw();
+            if(c.destroyed){
+                remainingCities--;
+            }
+        });
 
-        cities.forEach(c => c.draw());
-        
-        silos.forEach(s => s.draw());
+        remainingMissiles = 0;
+        silos.forEach(s => {
+            s.draw();
+            remainingMissiles += s.missiles;
+        });
 
         enemyMissiles = enemyMissiles.filter(e => {
             e.draw();
@@ -48,7 +60,6 @@ function draw() { // main game loop ... infinite times...
                 return true;
             } else {
                 createExplosions(e.endPoint, 4, 255);
-                // remove from mytimeoutlist?
                 return false;
             }
         });
@@ -72,14 +83,53 @@ function draw() { // main game loop ... infinite times...
         });
 
         // did we die?
-        if (cities.length == 0) {
+        if (remainingCities < 1) {
             gameState = -1;
         }
+
+        // are we done with this level?
+        if (enemyMissiles < 1) {
+            // show bonus points screen..... later
+            console.log("ready to go to next level!");
+            textSize(122);
+            text("LEVEL COMPLETE", width/2, height/3);
+            textSize(88);
+            text("BONUS POINTS", width/2, height/1.8);
+            text("score: " + score + " + " + calculateBonus(), width/2, height/1.5);
+
+            bonusDelay--;
+            if(bonusDelay < 1){
+                score += calculateBonus();
+                move2NextLevel();
+            }
+        }
+
     }
 
 }
 
-function createExplosions(loc, num, color) {
+function move2NextLevel(){
+    // reset bonusDelay, silos, and +1 city
+    bonusDelay = 30 * 3;
+    if (remainingCities < 6) {
+        remainingCities++;
+        let cityIndex = cities.findIndex( c => c.destroyed);
+        cities[cityIndex].destroyed = false;
+    };
+    silos = [
+        new Silo(50, height - 100),
+        new Silo(width / 2, height - 100),
+        new Silo(width - 50, height - 100),
+    ];
+    // level 2+ settings
+    gameState++;
+    for (let i = 0; i < 20 + (gameState * 3); i++) {
+        let r = random(-2000, 2000);
+        enemyMissiles.push(new EnemyMissile(2 + gameState/2, r + i * (1000 - gameState * 100)));
+    }
+}
+
+function createExplosions(loc, num, myColor) {
     color = color == 0 ? 255 : 0;
     if (num > 0) {
         setTimeout(() => {
@@ -109,17 +159,21 @@ function mouseClicked() {
 }
 
 function keyPressed() { // on SpaceBar only on gamestart or gameover
-    if (keyCode === 32 && gameState < 1) { 
+    if (keyCode === 32 && gameState < 1) {
         console.log("START THE GAME!");
         restart();
         gameState = 1;
+
         // level 1 settings
-        launcher = new EnemyLauncher(20, 2, 2000);
-        launcher.fireMissiles();
+        for (let i = 0; i < 20; i++) {
+            let r = random(-2000, 2000)
+            enemyMissiles.push(new EnemyMissile(2, r + i * 1000));
+        }
     }
 }
 
-function restart(){
+function restart() {
+    score = 0;
     missileList = [];
     explosions = [];
     enemyMissiles = [];
@@ -138,17 +192,18 @@ function restart(){
     ];
 }
 
-function myGlobalTimeout(fn, delay){
-    const id = setTimeout(() => { 
-        fn();
-        allMyTimeouts.delete(id);
-     }, delay);
-    allMyTimeouts.add(id);
+
+function drawStats() {
+    let location = 100;
+    // textSize(16);
+    // text("EnemyMissiles: " + enemyMissiles.length, width - 100, location);
+    // text("RemainingMissiles: " + remainingMissiles, width - 100, location - 15);
+    // text("Cities: " + remainingCities, width - 100, location - 30);
+    textSize(36);
+    text("Score: " + score, width - 100, location - 45);
+    text("Level: " + gameState, width - 100, location - 70);
 }
 
-function clearAllMyTimeouts(){
-    allMyTimeouts.forEach(t => {
-        clearTimeout(t);
-    });
-    allMyTimeouts.clear();
+function calculateBonus() {
+    return (cities.length * 100) + (remainingMissiles * 5);
 }
