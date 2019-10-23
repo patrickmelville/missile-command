@@ -1,12 +1,3 @@
-// to do list for part 5
-
-/* 
-- FINISHED - rework missiles (simplify AKA get rid of enemylauncher)
-- FINISHED - multiple levels 
-- FINISHED - bonus screen
-- MEH FINISHED - enhance graphic design
-*/
-
 function setup() { // once at the beginning.
     createCanvas(800, 800);
     textAlign(CENTER);
